@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERA — Virtual Executive Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@300;400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c26;
+    --surface2: #1e2330;
+    --surface3: #252b3b;
+    --border: #2a3045;
+    --accent: #5b8af0;
+    --accent2: #7c5ce8;
+    --accent-glow: rgba(91,138,240,0.15);
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --text: #e8ecf4;
+    --text2: #9ba3b8;
+    --text3: #5a6478;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.3px; }
+  .logo-text span { color: var(--accent); }
+  .header-meta { font-size: 12px; color: var(--text3); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .team-badge {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .team-badge strong { color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .shell {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 57px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 4px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 8px 4px;
+    margin-top: 8px;
+  }
+  .sidebar-label:first-child { margin-top: 0; }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    width: 100%;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--accent-glow); color: var(--accent); }
+  .nav-btn .nav-icon { font-size: 15px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 1px 6px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .panel.visible { display: flex; }
+
+  /* ── CHAT PANEL ── */
+  .chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .chat-header h2 { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; }
+  .chat-header p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* Quick actions */
+  .quick-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  .quick-actions::-webkit-scrollbar { display: none; }
+  .qa-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .qa-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  /* Messages */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .msg { display: flex; gap: 10px; animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0; margin-top: 2px;
+  }
+  .msg-avatar.vera { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .msg-avatar.user-av { background: var(--surface3); border: 1px solid var(--border); }
+  .msg-bubble {
+    max-width: 72%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .msg.user .msg-bubble { background: var(--accent-glow); border-color: rgba(91,138,240,0.3); }
+  .msg-bubble strong { color: var(--accent); font-weight: 600; }
+  .msg-bubble ul { padding-left: 18px; margin-top: 6px; }
+  .msg-bubble li { margin-bottom: 4px; }
+  .msg-bubble .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .msg-bubble .chip {
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    border: 1px solid var(--border); background: var(--surface3); color: var(--text2);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .msg-bubble .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .msg-meta { font-size: 10px; color: var(--text3); margin-top: 4px; }
+  .msg.user .msg-meta { text-align: right; }
+
+  /* Typing indicator */
+  .typing-indicator { display: flex; gap: 10px; align-items: center; }
+  .typing-dots { display: flex; gap: 4px; padding: 12px 14px; }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  /* Input */
+  .chat-input-area {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    transition: border-color 0.2s;
+  }
+  .input-row:focus-within { border-color: var(--accent); }
+  #chatInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    resize: none;
+    max-height: 140px;
+    line-height: 1.5;
+    padding-top: 2px;
+  }
+  #chatInput::placeholder { color: var(--text3); }
+  .send-btn {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: var(--accent);
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .send-btn:hover { background: #4a7ae0; }
+  .send-btn:disabled { background: var(--surface3); cursor: default; }
+  .input-hint { font-size: 11px; color: var(--text3); margin-top: 6px; text-align: center; }
+
+  /* ── TEAM PANEL ── */
+  .panel-inner { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  .panel-title { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .panel-sub { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+
+  .team-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat-val { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; color: var(--accent); }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .person-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .person-card:hover { border-color: var(--accent); }
+  .person-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .person-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+  .person-name { font-size: 13px; font-weight: 600; }
+  .person-role { font-size: 11px; color: var(--text3); }
+  .person-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border);
+    color: var(--text3);
+  }
+  .tag.green { border-color: rgba(52,211,153,0.3); color: var(--green); background: rgba(52,211,153,0.08); }
+  .tag.amber { border-color: rgba(251,191,36,0.3); color: var(--amber); background: rgba(251,191,36,0.08); }
+  .tag.red { border-color: rgba(248,113,113,0.3); color: var(--red); background: rgba(248,113,113,0.08); }
+
+  /* ── TEMPLATES PANEL ── */
+  .tmpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .tmpl-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .tmpl-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .tmpl-icon { font-size: 24px; margin-bottom: 10px; }
+  .tmpl-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .tmpl-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .tmpl-use-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tmpl-use-btn:hover { background: var(--accent); color: white; }
+
+  /* ── EMPTY / WELCOME MSG ── */
+  .welcome-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px 20px;
+    color: var(--text3);
+    text-align: center;
+  }
+  .welcome-msg .big-icon { font-size: 40px; margin-bottom: 4px; }
+  .welcome-msg h3 { font-family: 'Sora', sans-serif; font-size: 16px; color: var(--text2); }
+  .welcome-msg p { font-size: 13px; max-width: 380px; line-height: 1.6; }
+
+  /* Scrollbar */
+  .panel-inner::-webkit-scrollbar { width: 4px; }
+  .panel-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .team-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🤖</div>
+    <div>
+      <div class="logo-text"><span>VERA</span> — Virtual EA</div>
+      <div class="header-meta">Powered by Claude AI</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="team-badge">Team size: <strong>80</strong></div>
+    <div class="team-badge" id="dateBadge"></div>
+  </div>
+</header>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Workspace</div>
+    <button class="nav-btn active" onclick="switchPanel('chat', this)">
+      <span class="nav-icon">💬</span> Ask VERA
+    </button>
+    <button class="nav-btn" onclick="switchPanel('team', this)">
+      <span class="nav-icon">👥</span> Team Directory
+    </button>
+    <button class="nav-btn" onclick="switchPanel('templates', this)">
+      <span class="nav-icon">📋</span> Task Templates
+    </button>
+
+    <div class="sidebar-label">Quick Tasks</div>
+    <button class="nav-btn" onclick="loadPrompt('Draft a weekly standup summary email for my 80-person team covering key wins, blockers, and priorities')">
+      <span class="nav-icon">📧</span> Weekly Summary
+    </button>
+    <button class="nav-btn" onclick="loadPrompt('Help me plan a 1-on-1 check-in agenda. I need to cover performance, wellbeing, and career growth in 30 minutes')">
+      <span class="nav-icon">🗓️</span> 1-on-1 Prep
+    </button>
+    <button class="nav-btn" onclick="loadPrompt('I need to delegate a critical project. Help me think through who on my team is best suited and how to set them up for success')">
+      <span class="nav-icon">🔀</span> Delegate Work
+    </button>
+    <button class="nav-btn" onclick="loadPrompt('Help me write a performance review for a team member who has been strong technically but struggles with communication')">
+      <span class="nav-icon">⭐</span> Perf Review
+    </button>
+    <button class="nav-btn" onclick="loadPrompt('One of my direct reports is underperforming. Help me prepare for a difficult conversation about it')">
+      <span class="nav-icon">⚠️</span> Difficult Convos
+    </button>
+    <button class="nav-btn" onclick="loadPrompt('Create a team communication plan for announcing a major org change or restructure to 80 people')">
+      <span class="nav-icon">📣</span> Announcements
+    </button>
+
+    <div class="sidebar-label">Analysis</div>
+    <button class="nav-btn" onclick="loadPrompt('Give me a framework to assess team health across 80 people: engagement, productivity, and burnout risk')">
+      <span class="nav-icon">📊</span> Team Health
+    </button>
+    <button class="nav-btn" onclick="loadPrompt('Help me identify top performers and flight risks on my team. What signals should I watch for?')">
+      <span class="nav-icon">🔍</span> Talent Risk
+    </button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- CHAT PANEL -->
+    <div class="panel visible" id="panel-chat">
+      <div class="chat-header">
+        <h2>Ask VERA anything</h2>
+        <p>Your AI-powered executive assistant for leading a team of 80</p>
+      </div>
+
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="loadPrompt('Draft my weekly leadership update email')">✉️ Weekly update</button>
+        <button class="qa-btn" onclick="loadPrompt('Prepare a talking points doc for my next all-hands meeting with 80 people')">🎤 All-hands prep</button>
+        <button class="qa-btn" onclick="loadPrompt('Suggest a sprint planning agenda for a cross-functional team of 80')">📅 Sprint planning</button>
+        <button class="qa-btn" onclick="loadPrompt('Give me 5 team-building activity ideas for a remote team of 80')">🎯 Team activities</button>
+        <button class="qa-btn" onclick="loadPrompt('Draft an escalation message to my director about a critical blocker')">🚨 Escalation draft</button>
+        <button class="qa-btn" onclick="loadPrompt('How do I prioritize competing demands from 80 team members?')">⚖️ Prioritisation</button>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="welcome-msg">
+          <div class="big-icon">🤖</div>
+          <h3>Hi, I'm VERA — your Virtual EA</h3>
+          <p>I'm here to help you lead your team of 80. Ask me to draft communications, prepare for tough conversations, plan meetings, review performance, or anything else you need. Use the quick actions above or type below.</p>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="input-row">
+          <textarea id="chatInput" rows="1" placeholder="Ask VERA anything… e.g. 'Draft a 1-on-1 agenda for a new joiner'" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+        <div class="input-hint">Press Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div>
+
+    <!-- TEAM PANEL -->
+    <div class="panel" id="panel-team">
+      <div class="panel-inner">
+        <div class="panel-title">Team Directory</div>
+        <div class="panel-sub">Sample team structure — click any card to ask VERA about that person</div>
+
+        <div class="team-stats">
+          <div class="stat-card">
+            <div class="stat-val">80</div>
+            <div class="stat-lbl">Total headcount</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">8</div>
+            <div class="stat-lbl">Direct reports</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">6</div>
+            <div class="stat-lbl">Sub-teams</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">4</div>
+            <div class="stat-lbl">Open roles</div>
+          </div>
+        </div>
+
+        <div class="team-grid" id="teamGrid"></div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES PANEL -->
+    <div class="panel" id="panel-templates">
+      <div class="panel-inner">
+        <div class="panel-title">Task Templates</div>
+        <div class="panel-sub">Click any template to use it instantly with VERA</div>
+        <div class="tmpl-grid" id="tmplGrid"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── State ──
+let conversationHistory = [];
+let isLoading = false;
+
+// ── System prompt ──
+const SYSTEM_PROMPT = `You are VERA (Virtual Executive Resource Assistant), an elite AI executive assistant supporting a team leader who manages 80 people. You have deep expertise in:
+
+- **People leadership**: 1-on-1s, performance reviews, career conversations, team culture, difficult conversations, conflict resolution, engagement, retention
+- **Communications**: emails, announcements, all-hands content, stakeholder updates, escalations, recognition messages
+- **Operations**: meeting agendas, sprint planning, OKRs, goal-setting, delegation frameworks, workload balancing
+- **Talent management**: identifying high-performers, flight risks, succession planning, coaching plans, hiring needs
+- **Strategy**: team health assessments, org design, capacity planning, priority-setting across a large group
+
+You know that managing 80 people means the leader has limited bandwidth. You always:
+- Provide ready-to-use drafts (not just advice) unless they just want advice
+- Think in scalable systems — what works for 8 people often breaks at 80
+- Flag people-risks proactively when context warrants it
+- Keep outputs structured and actionable
+- Offer follow-up options at the end of your response
+
+Tone: Professional but warm. Confident. You are a trusted partner, not just a tool.
+
+Format your responses with clear sections, bullet points where helpful, and bold key terms. When drafting communications, produce the actual draft clearly marked off.`;
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('dateBadge').textContent = new Date().toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+  renderTeam();
+  renderTemplates();
+});
+
+// ── Panel switch ──
+function switchPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('visible');
+  if (btn) btn.classList.add('active');
+}
+
+// ── Load prompt shortcut ──
+function loadPrompt(text) {
+  switchPanel('chat', document.querySelector('.nav-btn'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.nav-btn').classList.add('active');
+  const inp = document.getElementById('chatInput');
+  inp.value = text;
+  autoResize(inp);
+  inp.focus();
+}
+
+// ── Auto resize textarea ──
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+// ── Key handler ──
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+// ── Render messages ──
+function appendMsg(role, html, time) {
+  const wrap = document.getElementById('messages');
+  // Remove welcome msg if present
+  const welcome = wrap.querySelector('.welcome-msg');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : '');
+  const t = time || new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  div.innerHTML = `
+    <div class="msg-avatar ${role === 'user' ? 'user-av' : 'vera'}">${role === 'user' ? '👤' : '🤖'}</div>
+    <div>
+      <div class="msg-bubble">${html}</div>
+      <div class="msg-meta">${t}</div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const wrap = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.id = 'typing';
+  div.innerHTML = `
+    <div class="msg-avatar vera">🤖</div>
+    <div class="msg-bubble" style="padding:0">
+      <div class="typing-dots">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function markdownToHtml(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^### (.+)$/gm, '<strong style="font-size:13px;color:var(--text)">$1</strong>')
+    .replace(/^## (.+)$/gm, '<strong style="font-size:14px;color:var(--text)">$1</strong>')
+    .replace(/^# (.+)$/gm, '<strong style="font-size:15px;color:var(--accent)">$1</strong>')
+    .replace(/^- (.+)$/gm, '• $1')
+    .replace(/^\d+\. (.+)$/gm, (m, p) => m)
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+
+// ── Send message ──
+async function sendMessage() {
+  if (isLoading) return;
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  inp.value = ''; autoResize(inp);
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  appendMsg('user', markdownToHtml(text));
+  conversationHistory.push({ role: 'user', content: text });
+
+  showTyping();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    if (data.content && data.content[0]) {
+      const reply = data.content[0].text;
+      conversationHistory.push({ role: 'assistant', content: reply });
+      appendMsg('assistant', markdownToHtml(reply));
+    } else {
+      appendMsg('assistant', '⚠️ Something went wrong. Please try again.');
+    }
+  } catch(e) {
+    removeTyping();
+    appendMsg('assistant', '⚠️ Connection error. Please check your network and try again.');
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+// ── Team data ──
+const TEAM = [
+  {name:'Alex Rivera', role:'Eng Lead — Platform', team:'Engineering', perf:'High', risk:'Low', skills:['Arch','Mentoring']},
+  {name:'Priya Kapoor', role:'Senior Dev', team:'Engineering', perf:'High', risk:'Medium', skills:['Backend','APIs']},
+  {name:'James Thornton', role:'Dev', team:'Engineering', perf:'Medium', risk:'Low', skills:['Frontend','React']},
+  {name:'Sofia Chen', role:'QA Lead', team:'QA', perf:'High', risk:'Low', skills:['Automation','Quality']},
+  {name:'Marcus Webb', role:'Product Manager', team:'Product', perf:'High', risk:'High', skills:['Roadmap','Stakeholders']},
+  {name:'Aisha Nkosi', role:'Senior Designer', team:'Design', perf:'High', risk:'Low', skills:['UX','Research']},
+  {name:'Leo Hartmann', role:'Data Engineer', team:'Data', perf:'Medium', risk:'Medium', skills:['SQL','Pipelines']},
+  {name:'Yuki Tanaka', role:'Scrum Master', team:'Ops', perf:'High', risk:'Low', skills:['Agile','Facilitation']},
+  {name:'Carlos Medina', role:'Dev', team:'Engineering', perf:'Low', risk:'High', skills:['Python','Infra']},
+  {name:'Emma Johansson', role:'Business Analyst', team:'Product', perf:'Medium', risk:'Low', skills:['Requirements','Process']},
+  {name:'Ravi Sharma', role:'DevOps', team:'Engineering', perf:'High', risk:'Medium', skills:['K8s','CI/CD']},
+  {name:'Naomi Osei', role:'UX Researcher', team:'Design', perf:'Medium', risk:'Low', skills:['Interviews','Insights']},
+];
+
+function renderTeam() {
+  const g = document.getElementById('teamGrid');
+  g.innerHTML = TEAM.map(p => {
+    const initials = p.name.split(' ').map(n=>n[0]).join('');
+    const perfClass = p.perf === 'High' ? 'green' : p.perf === 'Low' ? 'red' : '';
+    const riskClass = p.risk === 'High' ? 'red' : p.risk === 'Medium' ? 'amber' : 'green';
+    return `<div class="person-card" onclick="askAbout('${p.name}','${p.role}','${p.team}','${p.perf}','${p.risk}')">
+      <div class="person-top">
+        <div class="person-avatar">${initials}</div>
+        <div><div class="person-name">${p.name}</div><div class="person-role">${p.role} · ${p.team}</div></div>
+      </div>
+      <div class="person-tags">
+        ${p.skills.map(s=>`<span class="tag">${s}</span>`).join('')}
+        <span class="tag ${perfClass}">Perf: ${p.perf}</span>
+        <span class="tag ${riskClass}">Risk: ${p.risk}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function askAbout(name, role, team, perf, risk) {
+  const prompt = `Tell me how to best manage ${name} (${role}, ${team} team). Their performance is ${perf} and flight risk is ${risk}. What should I focus on in our next 1-on-1?`;
+  loadPrompt(prompt);
+}
+
+// ── Templates ──
+const TEMPLATES = [
+  {icon:'✉️', name:'Weekly Team Update', desc:'A structured email covering wins, blockers, priorities, and shout-outs for 80 people.',
+   prompt:'Draft a weekly team update email for my 80-person team. Include: top wins this week, key blockers to be aware of, priorities for next week, and a team shout-out section. Make it engaging and concise.'},
+  {icon:'🎤', name:'All-Hands Agenda', desc:'A complete all-hands meeting plan with talking points, Q&A, and engagement tactics.',
+   prompt:'Create a 60-minute all-hands meeting agenda for my team of 80. Include: opening (energy setter), business update, team wins, strategic priorities, Q&A, and close. Add facilitator notes for each section.'},
+  {icon:'🗓️', name:'1-on-1 Template', desc:'A 30-minute check-in structure that covers wellbeing, work, and growth.',
+   prompt:'Give me a 30-minute 1-on-1 meeting template I can use consistently across my team of 80. It should cover: personal check-in, work updates, blockers, feedback exchange, and career/growth. Include good opening questions for each section.'},
+  {icon:'⭐', name:'Performance Review', desc:'A balanced review framework with strengths, development areas, and a rating rationale.',
+   prompt:'Help me write a balanced mid-year performance review. Give me a template with sections for: key achievements, strengths demonstrated, areas for development, goals for next period, and overall rating rationale. Include example language for strong, average, and below-average performers.'},
+  {icon:'🔀', name:'Delegation Brief', desc:'A clear handoff doc when assigning a project to a team member.',
+   prompt:'Create a delegation brief template I can use when assigning important work to someone on my team. It should cover: context and why they were chosen, scope and deliverables, success criteria, resources available, key stakeholders, check-in cadence, and decision-making authority.'},
+  {icon:'📣', name:'Change Announcement', desc:'An org-change communication that is clear, empathetic, and answers the "why".',
+   prompt:'Draft a change communication email template for announcing a significant org change to 80 people. It should cover: what is changing, why it\'s happening, what it means for the team, what stays the same, timeline, and how to ask questions. Make it honest and human.'},
+  {icon:'⚠️', name:'Difficult Conversation Prep', desc:'A structured prep sheet for a performance or conduct conversation.',
+   prompt:'Help me prepare for a difficult performance conversation. Give me: a prep framework (facts, impact, desired change), example opening lines, how to handle defensiveness, how to agree on a path forward, and what to document afterwards. Make it compassionate but clear.'},
+  {icon:'🚀', name:'New Starter 30-60-90 Plan', desc:'An onboarding roadmap for someone joining the team.',
+   prompt:'Create a 30-60-90 day onboarding plan for a new team member joining my 80-person org. Cover: first 30 days (learn), 60 days (contribute), 90 days (lead). Include milestones, who to meet, and what success looks like at each stage.'},
+  {icon:'📊', name:'Team Health Check', desc:'A pulse survey and scoring framework to assess your team\'s wellbeing.',
+   prompt:'Give me a team health assessment framework for a team of 80. I want to check on: engagement, clarity of purpose, psychological safety, workload and burnout risk, and team relationships. Include 5 survey questions per dimension and how to interpret the scores.'},
+  {icon:'🤝', name:'Skip-Level Meeting Guide', desc:'How to run effective skip-level 1-on-1s without undermining your managers.',
+   prompt:'Give me a guide to running effective skip-level 1-on-1s across my team of 80. Include: how often to hold them, who to prioritise, question framework to use, what to do with the feedback, and how to avoid undercutting my direct report managers.'},
+  {icon:'🎯', name:'OKR Review Template', desc:'A quarterly OKR check-in format for a large team.',
+   prompt:'Create a quarterly OKR review template for my team of 80. Include sections for: progress on key results (RAG status), what\'s working, what\'s blocked, adjustments needed, and learnings to carry forward. Make it visual and easy to scan.'},
+  {icon:'💡', name:'Team Recognition Email', desc:'A meaningful, specific recognition message that motivates and models behaviour.',
+   prompt:'Help me write a team recognition email that goes out to all 80 people. I want to: celebrate specific recent wins, name individuals by name, connect their work to team/company goals, and motivate continued effort. Give me a template and example language.'},
+];
+
+function renderTemplates() {
+  document.getElementById('tmplGrid').innerHTML = TEMPLATES.map(t =>
+    `<div class="tmpl-card">
+      <div class="tmpl-icon">${t.icon}</div>
+      <div class="tmpl-name">${t.name}</div>
+      <div class="tmpl-desc">${t.desc}</div>
+      <div class="tmpl-use-btn" onclick="loadPrompt(\`${t.prompt.replace(/`/g,"'")}\`)">Use template →</div>
+    </div>`
+  ).join('');
+}
+</script>
+</body>
+</html>
